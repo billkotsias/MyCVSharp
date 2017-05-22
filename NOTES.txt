@@ -1,0 +1,14 @@
+NOTES
+
+1) I think it is stupid to go straight to grayscale. IBO might give nice results with *SOME* images, but we are actually LOSING DETAIL by rejecting color.
+I think the first step is to create a ROI by checking the box color; this SHOULD  help separate it from the background.
+
+2) After creating the ROI, we could then convert to grayscale and search for Hough lines, contours etc.
+
+3) Then, we should check the actual geometry: we are looking for the top rectangle-ish shape in the ROI.
+
+---
+
+So:
+
+1) Reject all perimetric areas that are far-colored from the box's color. RGB -> HSL input conversion!

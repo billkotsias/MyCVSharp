@@ -4,6 +4,7 @@ using OpenCvSharp;
 
 namespace MyCVSharp
 {
+	// Unity-related Utils (UUtils)
 	static public class UUtils
 	{
 		// Convert Unity Texture to CvMat image 24bit; alpha value is discarded
@@ -137,17 +138,6 @@ namespace MyCVSharp
 			}
 
 			return outCopy;
-		}
-
-		static private int WindowCounter = 0;
-		static public void NewWindowShow( CvArr imageToShow, string windowName = null)
-		{
-			if (windowName == null)
-			{
-				windowName = (WindowCounter++).ToString();
-			}
-			Cv.NamedWindow( windowName );
-			Cv.ShowImage( windowName, imageToShow );
 		}
 	}
 }

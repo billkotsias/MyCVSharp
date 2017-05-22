@@ -1,13 +1,56 @@
 ﻿using System;
 using OpenCvSharp;
+using OpenCvSharp.CPlusPlus;
 using MyCVSharp;
 using System.Diagnostics;
+using System.Collections;
 
 class MainClass
 {
 	static void Main()
 	{
+		//CvMat test = new CvMat( "box1.png", LoadMode.Color );
+		CvMat test = new CvMat( "box7.png", LoadMode.Color );
+		MatOps.NewWindowShow( test, "ORIGINAL" );
+		FindTheBox findit = new FindTheBox(260,100);
+		//CvMat test = new CvMat( "f1.png", LoadMode.Color );
+		//FindTheBox findit = new FindTheBox(400,400);
+
+		findit.calcNextFrame( test );
+		Cv.WaitKey();
+
+		return;
+
 		MyCVSharpTEST.Test t = new MyCVSharpTEST.Test();
+		return;
+
+		Stopwatch w = new Stopwatch();
+		w.Start();
+		CvMat normalized = MatOps.MyNormalize( test );
+		w.Stop();
+		Console.Out.WriteLine( "MyNorm = " + w.ElapsedMilliseconds);
+		w.Reset();
+		MatOps.NewWindowShow( normalized );
+
+		w.Start();
+		CvMat myhue = MatOps.BGRtoHue( test );
+		w.Stop();
+		Console.Out.WriteLine( "MyHue = " + w.ElapsedMilliseconds );
+		w.Reset();
+		MatOps.NewWindowShow( myhue, "MyHue" );
+
+		w.Start();
+		CvMat hsl = MatOps.ConvertChannels( test, MatrixType.U8C3, ColorConversion.BgrToHsv_Full );
+		CvMat hue = MatOps.CopySize( test, MatrixType.U8C1 );
+		CvMat lum = hue.EmptyClone();
+		hsl.Split( hue, null, lum, null );
+		w.Stop();
+		Console.Out.WriteLine( "OpenCV = " + w.ElapsedMilliseconds );
+		w.Reset();
+		MatOps.NewWindowShow( hue );
+		MatOps.NewWindowShow( lum );
+
+		Cv.WaitKey();
 	}
 }
 
@@ -23,27 +66,24 @@ namespace MyCVSharpTEST
 			
 			Stopwatch stopwatch = new Stopwatch();
 			stopwatch.Start();
-			for (int i = 1; i <= 8; ++i)
+			ArrayList boxExamples = new ArrayList() { /*"test.png", */1, 2, 3};
+			while (boxExamples.Count > 0)
 			{
-				src = new CvMat( "bbox"+i+".jpg", LoadMode.Color );
+				string imageName = boxExamples[0].ToString();
+				if (imageName.Length == 1) imageName = "box" + imageName + ".png";
+				src = new CvMat( imageName, LoadMode.Color );
+				boxExamples.RemoveAt( 0 );
 				float[] points = rect.calcNextFrame( src );
-				ShowPoints( points );
-				UUtils.NewWindowShow( src );
+				Console.Out.WriteLine( "Processing " + imageName );
+				//ShowPoints( points );
+				//MatOps.NewWindowShow( src );
 			}
 			stopwatch.Stop();
 			Console.Out.WriteLine( "time taken = " + stopwatch.ElapsedMilliseconds );
 			Cv.WaitKey();
 			return;
 
-			src = new CvMat( "bbox4.jpg", LoadMode.Color );
-			for (int i = 0; i < 40; ++i)
-			{
-				float[] points = rect.calcNextFrame( src );
-				ShowPoints( points );
-				UUtils.NewWindowShow( src );
-				Cv.WaitKey();
-			}
-			return;
+			//
 
 			ContourData data = Filters.FindContours( src, ContourRetrieval.Tree, ContourChain.ApproxSimple, Const.PointZero, 0000 );
 			Console.Out.WriteLine( data.contours.Length );
@@ -59,25 +99,6 @@ namespace MyCVSharpTEST
 					Console.Out.WriteLine( i.ToString() + " " + data.contours[j][i] );
 				}
 			}
-
-			//CvMat dst = new CvMat( src.Rows, src.Cols, src.ElemType );
-			//Cv.Canny( src, dst, 50, 200 ); //src.size == dst.size && src.depth() == CV_8U && dst.type() == CV_8U;
-			//dst = MatOps.Convert( src, MatrixType.F32C1, 1.0 / 255.0 );
-			//Utils.NewWindowShow( dst );
-			//src = Filters.IBO( src );
-			//src = MatOps.Convert( src, MatrixType.U8C1, 255 );
-			//Utils.NewWindowShow( src );
-			//Filters.ContrastEnhancement( src );
-			//Utils.NewWindowShow( src );
-			//Utils.NewWindowShow( dst );
-			Console.Out.WriteLine( "NeighborhoodValleyEmphasis=" + Filters.NeighborhoodValleyEmphasis(src) );
-
-			Cv.WaitKey();
-			//       using (	Window dummy = new Window( "src image", src ),
-			//dummy2 = new Window( "dst image", dst ))
-			//       {
-			//           Cv2.WaitKey();
-			//       }
 		}
 
 		static public void ShowPoints(float[] pts)

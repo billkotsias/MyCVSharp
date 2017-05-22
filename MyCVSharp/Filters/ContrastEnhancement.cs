@@ -1,11 +1,46 @@
 ﻿using OpenCvSharp;
-using System.Collections;
+using System.Collections.Generic;
 using System;
 
 namespace MyCVSharp
 {
 	static public partial class Filters
 	{
+		// this may not be as super-accurate as the other one (although it might just be that as well), but it's 17 (!!!) times faster (measured!)
+		// => frame = 8 bit greyscale CvMat
+		static public void ContrastEnhancement2(CvMat frame)
+		{
+			unsafe
+			{
+				int dataSize = frame.Cols * frame.Rows;
+				byte* data = frame.DataByte;
+				// find min,max
+				byte min = 255, max = 0;
+				for (int i = 0; i < dataSize; ++i)
+				{
+					byte currentValue = data[i];
+					if (min > currentValue) min = currentValue;
+					if (max < currentValue) max = currentValue;
+				}
+
+				float gain = 255f / (max - min);
+				if (gain == 1f)
+				{
+					Console.Out.WriteLine( "ContrastEnhancement2: cannot enhance" );
+					return;
+				} else
+				{
+					Console.Out.WriteLine( "ContrastEnhancement2: enhancing by : {0}", gain );
+				}
+
+				// apply auto-gain
+				for (int i = 0; i < dataSize; ++i)
+				{
+					data[i] = (byte)((data[i] - min) * gain);
+				}
+			}
+		}
+
 		// NOTE : Also seems not well written and craves optimization at places. P.A.N.A.R.G.O.
 		// => frame = 8 bit greyscale CvMat
 		static public void ContrastEnhancement(CvMat frame)
@@ -25,7 +60,7 @@ namespace MyCVSharp
 			CvArr newHistBin = newHist.Bins;
 
 			//double[] origVals = new double[hist.Bins.GetDims( 0 )];
-			ArrayList origVals = new ArrayList( HistBinSize );
+			List<double> origVals = new List<double>( HistBinSize );
 			for (int i = 0; i < HistBinSize; i++)
 			{
 				double elem = newHistBin.GetReal1D( i );
@@ -39,31 +74,35 @@ namespace MyCVSharp
 			//for (i = 0; i < origVals.size(); i++)
 			//	histL.at<float>( i, 0 ) = origVals.at( i );
 
-			ArrayList peakValues = new ArrayList( HistBinSize ); //std::vector<int> peakValues;
+			List<double> peakValues = new List<double>( HistBinSize ); //std::vector<int> peakValues;
 
 			//////////3 bin search window
 			for (int i = 1; i < origVals.Count - 2; ++i)
 			{
-				double elem = (double)origVals[i];
-				if (elem > (double)origVals[i - 1] && elem > (double)origVals[i + 1])
+				double elem = origVals[i];
+				if (elem > origVals[i - 1] && elem > origVals[i + 1])
 				{
 					peakValues.Add( elem );
 				}
 			}
 
 			if (peakValues.Count == 0)
+			{
+				//Console.Out.WriteLine( "Cannot enhance" );
 				return; // cannot enhance?
+			}
 
 			//////Upper threshold
 			double threshUP = 0;
 			for (int i = 0; i < peakValues.Count; ++i)
 			{
-				threshUP += (double)peakValues[i];
+				threshUP += peakValues[i];
 			}
-			threshUP /= (double)peakValues.Count;
+			threshUP /= peakValues.Count;
 
 			//////Lower threshold
-			double threshDOWN = Math.Min( (double)(frame.Cols * frame.Rows), threshUP * origVals.Count ) / 256.0;
+			double threshDOWN = Math.Min( (frame.Cols * frame.Rows), threshUP * origVals.Count ) / 256.0;
+			//Console.Out.WriteLine( "Enhance thresholds " + threshUP + "/" + threshDOWN );
 
 			//////histogram reconstruction
 			CvArr histBins = hist.Bins;
@@ -102,15 +141,20 @@ namespace MyCVSharp
 			}
 
 			// assign computed values to input frame
+			//Console.Out.Write( "Enhance-->" );
 			for (int i = 0; i < frame.Cols; ++i)
 			{
 				for (int j = 0; j < frame.Rows; ++j)
 				{
 					// there is NO mask, thus no need to check for; was: "if (mask.data)..."
-					frame.SetReal2D( j, i, lookUpTable[(int)(frame.GetReal2D( j, i ))] );
+					byte oldValue = (byte)frame.Get2D( j, i );
+					byte newValue = lookUpTable[oldValue];
+					//if ((newValue <1 || newValue > 254) && (newValue != oldValue)) Console.Out.Write( oldValue + " " + newValue + "|");
+					frame.Set2D( j, i, newValue );
 					//frame.SetReal2D( j, i, lookUpTable[ (int)(255.0 * frame.GetReal2D( j, i )) ] / 255.0);
 				}
 			}
+			//Console.Out.WriteLine();
 
 			//frame = MatOps.Convert( frame, MatrixType.U8C1, 255.0 );
 		}

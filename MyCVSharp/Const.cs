@@ -1,4 +1,5 @@
 ﻿using OpenCvSharp;
+using System;
 
 namespace MyCVSharp
 {
@@ -13,6 +14,10 @@ namespace MyCVSharp
 		static public readonly CvScalar ScalarRed =		new CvScalar( 255, 0, 0 );
 		static public readonly CvScalar ScalarGreen =	new CvScalar( 0, 255, 0 );
 		static public readonly CvScalar ScalarBlue =	new CvScalar( 0, 0, 255 );
-		static public readonly CvScalar ScalarPurple =	new CvScalar( 0, 255, 255 );
+		static public readonly CvScalar ScalarMagenta =	new CvScalar( 0, 255, 255 );
+
+		// not a const, but doesn't feel bad to put in here
+		static private Random Rnd = new Random();
+		static public CvScalar ScalarRandom() { return new CvScalar( Rnd.Next( 256 ), Rnd.Next( 256 ), Rnd.Next( 256 ), Rnd.Next( 256 ) ); }
 	}
 }

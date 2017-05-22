@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Diagnostics;
+using System;
 using OpenCvSharp;
 using UnityEngine;
 using System.Collections.Generic;
@@ -51,7 +52,8 @@ namespace MyCVSharp
 			width = inputMat.Cols;
 			height = inputMat.Rows;
 
-			if (true) {
+			// taking out 4% of the input's edges: sounds wrong
+			if (false) {
 				// I have no idea what on earth is the purpose of this:
 				//CvMat temp2 = inputMat( new CvRect( inputMat.Cols / 25, inputMat.Cols / 25, inputMat.Cols - 2 * (inputMat.Cols / 25), inputMat.Rows - 2 * (inputMat.Rows / 25) ) );
 				//resize( temp2, temp2, inputMat.size() );
@@ -65,23 +67,32 @@ namespace MyCVSharp
 				// is it really required to remove 4% of the input image's edges?
 			}
 
+			CvMat inputMat_grey;
+			{
+				// TODO : looks like a waste to make two conversions from inputMat to _grey, instead of 1
+				// since OpenCV doesn't support it, it could be made manually
+				CvMat inputMat_grey8 = MatOps.ConvertChannels( inputMat );
+				inputMat_grey = MatOps.ConvertElements( inputMat_grey8, MatrixType.F32C1, 1.0 / 255.0 );
+			}
 
-			CvMat inputMat_grey8 = MatOps.ConvertChannels( inputMat );
-			CvMat inputMat_grey = MatOps.ConvertElements( inputMat_grey8, MatrixType.F32C1, 1.0 / 255.0 );
-			// TODO : looks like a waste to make two conversions from inputMat to _grey, instead of 1
-			// since OpenCV doesn't support it, it could be made manually
-
-			inputMat_grey = Filters.IBO( inputMat_grey ); // inputMat_grey = 32f
+			// NOTE : IBO seems to give good contrast with certain images, but with bbox7, it is just disastrous.
+			//MatOps.NewWindowShow( inputMat_grey );
+			//inputMat_grey = Filters.IBO( inputMat_grey ); // inputMat_grey = 32f
+			//MatOps.NewWindowShow( inputMat_grey );
 			inputMat_grey = MatOps.ConvertElements( inputMat_grey, MatrixType.U8C1, 255 ); // inputMat_grey = 8u
-			Filters.ContrastEnhancement( inputMat_grey ); // TODO : probably not needed
+			// was: SLOW : Filters.ContrastEnhancement( inputMat_grey ); // NOTE : not needed AFTER IBO
+			// NOTE : Contrast Enhancement2 may NOT be needed AT ALL, at this point at least, ANYWAY!!!
+			Filters.ContrastEnhancement2( inputMat_grey ); // NOTE : certainly NOT needed AFTER IBO
+			MatOps.NewWindowShow( inputMat_grey );
 
 			// mask passed originally in method below was all white, so I optimized it out. Passing the number of pixels was also dumb-o.
 			double thresh = Filters.NeighborhoodValleyEmphasis( inputMat_grey );
-
 			Cv.Threshold( inputMat_grey, inputMat_grey, thresh, 255, ThresholdType.BinaryInv );
+
 			IplConvKernel element = new IplConvKernel( 3, 3, 1, 1, ElementShape.Cross );
 			Cv.Erode( inputMat_grey, inputMat_grey, element );
 			Cv.Dilate( inputMat_grey, inputMat_grey, element );
+			MatOps.NewWindowShow( inputMat_grey );
 
 			// TODO : check if check is required
 			if (inputMat_grey.ElemType != MatrixType.U8C1)
@@ -477,7 +488,7 @@ namespace MyCVSharp
 				//*******  draw mapped corners  *****************//
 				for (j = 0; j < final4P.Count; ++j)
 				{
-					Cv.Circle( imageDest3, allPointsV[tracker[j]], 8, Const.ScalarPurple );
+					Cv.Circle( imageDest3, allPointsV[tracker[j]], 8, Const.ScalarMagenta);
 				}
 
 				//*******************************************************************************************//
