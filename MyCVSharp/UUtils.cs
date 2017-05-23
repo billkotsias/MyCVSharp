@@ -22,7 +22,6 @@ namespace MyCVSharp
 			outCopy = new byte[texWidth * texHeight * 3]; // reserve 3 bytes for each source texel
 
 			// a bit faster linear loop
-			if (true)
 			{
 				int srcOffset = textureData.pixels.GetLength( 0 ) - 1;
 				int destOffset = outCopy.GetLength( 0 ) - 1;
@@ -35,8 +34,8 @@ namespace MyCVSharp
 				}
 			}
 
-			// slower
-			if (false)
+#if false
+			// same thing but a bit slower
 			{
 				for (var j = 0; j < texHeight; ++j)
 				{
@@ -51,6 +50,7 @@ namespace MyCVSharp
 					}
 				}
 			}
+#endif
 
 			// assign the byte array to Mat
 			return new CvMat( texHeight, texWidth, MatrixType.U8C3, outCopy, false );
