@@ -87,6 +87,7 @@
     <Compile Include="Filters\IBO.cs" />
     <Compile Include="Filters\NeighborhoodValleyEmphasis.cs" />
     <Compile Include="FindTheBox.cs" />
+    <Compile Include="LineSegment.cs" />
     <Compile Include="Maths.cs" />
     <Compile Include="PointOps.cs" />
     <Compile Include="UFilters.cs" />

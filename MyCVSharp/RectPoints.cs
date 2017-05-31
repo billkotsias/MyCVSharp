@@ -53,19 +53,19 @@ namespace MyCVSharp
 			height = inputMat.Rows;
 
 			// taking out 4% of the input's edges: sounds wrong
-			if (false) {
-				// I have no idea what on earth is the purpose of this:
-				//CvMat temp2 = inputMat( new CvRect( inputMat.Cols / 25, inputMat.Cols / 25, inputMat.Cols - 2 * (inputMat.Cols / 25), inputMat.Rows - 2 * (inputMat.Rows / 25) ) );
-				//resize( temp2, temp2, inputMat.size() );
-				//temp2.copyTo( inputMat );
-				int borderX = inputMat.Cols / 25; // 4% of original
-				int borderY = inputMat.Rows / 25;
-				CvRect roi = new CvRect( borderX, borderY, inputMat.Cols - 2 * borderX, inputMat.Rows - 2 * borderY );
-				CvMat temp2 = inputMat.GetSubRect( out temp2, roi ); // stupid to pass "out temp2"?
-				inputMat = temp2;
-				// =TODO : What? temp2.Copy( inputMat );
-				// is it really required to remove 4% of the input image's edges?
-			}
+#if false
+			// I have no idea what on earth is the purpose of this:
+			//CvMat temp2 = inputMat( new CvRect( inputMat.Cols / 25, inputMat.Cols / 25, inputMat.Cols - 2 * (inputMat.Cols / 25), inputMat.Rows - 2 * (inputMat.Rows / 25) ) );
+			//resize( temp2, temp2, inputMat.size() );
+			//temp2.copyTo( inputMat );
+			int borderX = inputMat.Cols / 25; // 4% of original
+			int borderY = inputMat.Rows / 25;
+			CvRect roi = new CvRect( borderX, borderY, inputMat.Cols - 2 * borderX, inputMat.Rows - 2 * borderY );
+			CvMat temp2 = inputMat.GetSubRect( out temp2, roi ); // stupid to pass "out temp2"?
+			inputMat = temp2;
+			// =TODO : What? temp2.Copy( inputMat );
+			// is it really required to remove 4% of the input image's edges?
+#endif
 
 			CvMat inputMat_grey;
 			{

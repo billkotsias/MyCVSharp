@@ -103,9 +103,17 @@ namespace MyCVSharp
 			// instead of re-discovering them every frame.
 		}
 
-		private CvLineSegmentPoint[] distillLines( CvLineSegmentPoint[] lines )
+		// =>	lines = array of segments to distill
+		//		threshold = closeness, in pixels
+		private CvLineSegmentPoint[] distillLines( CvLineSegmentPoint[] lines, float threshold = 5f )
 		{
 			CvLineSegmentPoint[] distilled = null;
+			// first remove close lines (within some pixels) then see how many left there are
+			// NOTE : go for brute-force for NOW, if in practice we get to have 100s of lines, we may need to PARTITION the lines before checking
+			
+			// STOPPED HERE!!!:
+			// Use LineSegment.cs to merge lines together (not tested if there are bugs)!
+
 			return distilled;
 		}
 

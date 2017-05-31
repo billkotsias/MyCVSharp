@@ -59,7 +59,7 @@ namespace MyCVSharp
 
 			// TODO : I subtracted this addition because it seemed too much. Good?
 			////////this is an addition by us
-			if (false)
+#if (false)
 			{
 				for (x = a1; x < imageCols - a1; x++)
 				{
@@ -71,7 +71,7 @@ namespace MyCVSharp
 					}
 				}
 			}
-
+#endif
 			for (x = 0; x < imageCols; x++)
 			{
 				for (k = 0; k < a1; k++)
